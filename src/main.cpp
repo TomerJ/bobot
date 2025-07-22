@@ -15,8 +15,20 @@ void setup() {
   pinMode(A1, OUTPUT);
 }
 
+int i = 0;
+int j = 0;
+
 void attack() {
-  double ang = atan2(1-analogRead(A2/255), 1-analogRead(A3/255)) - M_PI/4;
+  if(j > i) {
+      // reverse
+      
+  }
+  if(analogRead(A3) > 200 && i > j) {
+    j=i + 20;
+
+    // find out how to reverse
+  }
+  double ang = atan2(1-analogRead(A2)/255, 1-analogRead(A3)/255) - M_PI/4;
   double w = ang*TURNSPEED;
 
   double left = SPEED - (w  / 2);
@@ -33,6 +45,7 @@ void attack() {
 void loop() {
   attack();
   delay(50);
+  i++;
   // put your main code here, to run repeatedly:
 }
 
