@@ -18,6 +18,10 @@ void setup() {
 int i = 0;
 int j = 0;
 
+int tL = -M_PI/4
+int tC = 0
+int tR = M_PI/4
+
 void attack() {
   if(j > i) {
       // reverse
