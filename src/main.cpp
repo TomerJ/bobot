@@ -1,11 +1,17 @@
 #include <Arduino.h>
 
+#include <math.h>
 // put function declarations here:
 int myFunction(int, int);
 
-int SPEED = 6;
+int SPEED = 100;
 int TURNSPEED = 3;
 int BREADTH = 3;
+
+
+struct pii{
+  double first,second;
+};
 
 void setup() {
   // put your setup code here, to run once:
@@ -13,27 +19,49 @@ void setup() {
   Serial.begin(9600);
   pinMode(A0, OUTPUT);
   pinMode(A1, OUTPUT);
+  pinMode(A2, INPUT);
+  pinMode(A3, INPUT);
 }
 
 int i = 0;
 int j = 0;
 
-int tL = -M_PI/4
-int tC = 0
-int tR = M_PI/4
+double tL = M_PI/4;
+double tC = 0;
+double tR = -M_PI/4;
 
 void attack() {
   if(j > i) {
       // reverse
-      
+
+      analogWrite(A0, -255);
+      analogWrite(A1, -255);
+      return;
   }
   if(analogRead(A3) > 200 && i > j) {
     j=i + 20;
 
+
     // find out how to reverse
   }
-  double ang = atan2(1-analogRead(A2)/255, 1-analogRead(A3)/255) - M_PI/4;
-  double w = ang*TURNSPEED;
+
+  double dL = max(digitalRead(A2)*255,0.01);
+  double dC = max(digitalRead(A3)*255,0.01);
+  double dR = max(digitalRead(A4)*255,0.01);
+
+  pii vL = {1/dL * cos(tL), 1/dL * sin(tL)};
+  pii vC = {1/dC * cos(tC), 1/dC * sin(tC)};
+  pii vR = {1/dC * cos(tR), 1/dR * sin(tR)};
+
+
+
+
+  double x = vL.first + vC.first + vR.first;
+  double y = vL.second + vC.second + vR.second;
+  
+
+  double w = atan2(y,x) * TURNSPEED;
+
 
   double left = SPEED - (w  / 2);
   double right = SPEED + (w / 2);
