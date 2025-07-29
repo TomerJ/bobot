@@ -1,9 +1,10 @@
 #include <Arduino.h>
 
+#include <math.h>
 // put function declarations here:
 int myFunction(int, int);
 
-int SPEED = 6;
+int SPEED = 100;
 int TURNSPEED = 3;
 int BREADTH = 3;
 
