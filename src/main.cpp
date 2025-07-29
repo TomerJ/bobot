@@ -7,49 +7,102 @@ int SPEED = 6;
 int TURNSPEED = 3;
 int BREADTH = 3;
 
-void setup() {
+void setup()
+{
   // put your setup code here, to run once:
   int result = myFunction(2, 3);
   Serial.begin(9600);
-  pinMode(A0, OUTPUT);
-  pinMode(A1, OUTPUT);
+  // l
+  pinMode(5, OUTPUT);
+  pinMode(6, OUTPUT);
+
+  // r
+  pinMode(7, OUTPUT);
+  pinMode(8, OUTPUT);
+
+  pinMode(A0, INPUT); // line sensor
+  pinMode(A1, INPUT);
+  pinMode(A2, INPUT); // middle thingy
+  pinMode(A3, INPUT);
 }
 
-int i = 0;
-int j = 0;
-
-void attack() {
-  if(j > i) {
-      // reverse
-      
-  }
-  if(analogRead(A3) > 200 && i > j) {
-    j=i + 20;
-
-    // find out how to reverse
-  }
-  double ang = atan2(1-analogRead(A2)/255, 1-analogRead(A3)/255) - M_PI/4;
-  double w = ang*TURNSPEED;
-
-  double left = SPEED - (w  / 2);
-  double right = SPEED + (w / 2);
-
-
-  analogWrite(A0, left);
-  analogWrite(A1, right);
-
-
-
+void stop()
+{
+  digitalWrite(5, LOW);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+  digitalWrite(8, LOW);
 }
 
-void loop() {
-  attack();
+void forward()
+{
+  digitalWrite(5, HIGH);
+  digitalWrite(6, LOW);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, LOW);
+}
+
+void back()
+{
+  digitalWrite(5, LOW);
+  digitalWrite(6, HIGH);
+  digitalWrite(7, LOW);
+  digitalWrite(8, HIGH);
+}
+
+void right()
+{
+  digitalWrite(5, HIGH);
+  digitalWrite(6, LOW);
+  digitalWrite(7, LOW);
+  digitalWrite(8, HIGH);
+}
+
+void left()
+{
+  digitalWrite(5, LOW);
+  digitalWrite(6, HIGH);
+  digitalWrite(7, HIGH);
+  digitalWrite(8, LOW);
+}
+
+void loop()
+{
+  if (digitalRead(A0))
+  {
+
+    delay(500);
+    back();
+    delay(500);
+    right();
+    delay(500);
+    stop();
+  }
+
+  else if (digitalRead(A2))
+  {
+    forward();
+  }
+
+  else if (digitalRead(A1))
+  {
+    left();
+  }
+
+  else if (digitalRead(A3))
+  {
+    right();
+  }
+  else
+  {
+    right();
+  }
+
   delay(50);
-  i++;
-  // put your main code here, to run repeatedly:
 }
 
 // put function definitions here:
-int myFunction(int x, int y) {
+int myFunction(int x, int y)
+{
   return x + y;
 }
