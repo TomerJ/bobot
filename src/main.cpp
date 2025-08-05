@@ -21,10 +21,22 @@ void setup()
   pinMode(7, OUTPUT);
   pinMode(8, OUTPUT);
 
-  pinMode(A0, INPUT); // line sensor
-  pinMode(A1, INPUT);
-  pinMode(A2, INPUT); // middle thingy
-  pinMode(A3, INPUT);
+  pinMode(A3, INPUT); // line sensor
+  pinMode(A4, INPUT); // line sensor
+  
+  pinMode(A0, INPUT);
+  pinMode(A1, INPUT); // middle thingy
+  pinMode(A2, INPUT);
+
+  pinMode(12, OUTPUT);
+  pinMode(11, OUTPUT);
+  pinMode(10, OUTPUT);
+  pinMode(9, OUTPUT);
+
+  digitalWrite(12, HIGH);
+  digitalWrite(11, HIGH);
+  digitalWrite(10, HIGH);
+  digitalWrite(9, HIGH);
 }
 
 void stop()
@@ -69,7 +81,7 @@ void left()
 
 void loop()
 {
-  if (digitalRead(A0))
+  if (digitalRead(A3) || digitalRead(A4))
   {
 
     delay(500);
