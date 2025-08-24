@@ -1,163 +1,180 @@
 #include <Arduino.h>
 #include <math.h>
+#include <limits.h>
 
-// === Constants ===
-int SPEED = 150;
+int SPEED = 255;
+
+
+
+
 const int TURNSPEED = 3;
 const int BREADTH = 3;
 
-// === Motor Pins ===
-#define MOTOR_L_PWM 5
-#define MOTOR_L_DIR 4
-#define MOTOR_R_PWM 6
-#define MOTOR_R_DIR 7
+#define MOTOR_1_B 5
+#define MOTOR_2_B 4
+#define MOTOR_2_A 6
+#define MOTOR_1_A 7
 
 bool start = false;
 
-// === Line Sensors ===
 #define LINE_LEFT A3
 #define LINE_RIGHT A4
 
-// === Distance Sensors ===
-#define DIST_LEFT  A0
-#define DIST_MID   A1
-#define DIST_RIGHT A2
+#define DIST_LEFT_T 8
+#define DIST_MID_T 9
+#define DIST_RIGHT_T 10
+#define DIST_LEFT_E 11
+#define DIST_MID_E 12
+#define DIST_RIGHT_E 13
 
-
-
-// === Start Button ===
 #define START 3
 
-// === Power Supply Control ===
-#define POWER_1 7
-#define POWER_2 8
-#define POWER_3 11
-#define POWER_4 12
-#define POWER_5 13
+const int uthresh = 20;
 
-// === Setup ===
+float readSensor(int trigPin, int echoPin) {
+  long duration;
+  float distance;
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  duration = pulseIn(echoPin, HIGH, 30000);
+  //Serial.println(duration);
+  if (duration == 0) {
+    return INT_MAX;
+  }
+  distance = duration * 0.034 / 2.0;
+  return distance;
+}
+
 void setup() {
   Serial.begin(9600);
-
-  // Motor pins
-  pinMode(MOTOR_L_PWM, OUTPUT);
-  pinMode(MOTOR_L_DIR, OUTPUT);
-  pinMode(MOTOR_R_PWM, OUTPUT);
-  pinMode(MOTOR_R_DIR, OUTPUT);
-
-  // Line sensor pins
+  pinMode(MOTOR_1_A, OUTPUT);
+  pinMode(MOTOR_1_B, OUTPUT);
+  pinMode(MOTOR_2_A, OUTPUT);
+  pinMode(MOTOR_2_B, OUTPUT);
   pinMode(LINE_LEFT, INPUT);
   pinMode(LINE_RIGHT, INPUT);
-
-  // Distance sensor pins
-  pinMode(DIST_LEFT, INPUT);
-  pinMode(DIST_MID, INPUT);
-  pinMode(DIST_RIGHT, INPUT);
-
-  // Start button
+  pinMode(DIST_LEFT_T, OUTPUT);
+  pinMode(DIST_MID_T, OUTPUT);
+  pinMode(DIST_RIGHT_T, OUTPUT);
+  pinMode(DIST_LEFT_E, INPUT);
+  pinMode(DIST_MID_E, INPUT);
+  pinMode(DIST_RIGHT_E, INPUT);
   pinMode(START, INPUT_PULLUP);
-
-  // Power supply control
-  pinMode(POWER_1, OUTPUT);
-  pinMode(POWER_2, OUTPUT);
-  pinMode(POWER_3, OUTPUT);
-  pinMode(POWER_4, OUTPUT);
-  pinMode(POWER_5, OUTPUT);
-
-  digitalWrite(POWER_1, HIGH);
-  digitalWrite(POWER_2, HIGH);
-  digitalWrite(POWER_3, HIGH);
-  digitalWrite(POWER_4, HIGH);
-  digitalWrite(POWER_5, HIGH);
+  //digitalWrite(POWER_1, HIGH);
 
   delay(3000);
   start = true;
 }
-
-// === Motor Control ===
 void stop() {
-  analogWrite(MOTOR_L_PWM, 0);
-  analogWrite(MOTOR_R_PWM, 0);
-}
+  digitalWrite(MOTOR_2_A, LOW);  // Left motor forward (inverted)
+  digitalWrite(MOTOR_2_B, LOW);
 
-void back() {
-  digitalWrite(MOTOR_L_DIR, LOW);
-  digitalWrite(MOTOR_R_DIR, LOW);
-  analogWrite(MOTOR_L_PWM, SPEED);
-  analogWrite(MOTOR_R_PWM, SPEED);
+  digitalWrite(MOTOR_1_A, LOW);  // Right motor forward
+  digitalWrite(MOTOR_1_B, LOW);
 }
 
 void forward() {
-  digitalWrite(MOTOR_L_DIR, LOW);
-  digitalWrite(MOTOR_R_DIR, LOW);
-  analogWrite(MOTOR_L_PWM, SPEED);
-  analogWrite(MOTOR_R_PWM, SPEED);
+  digitalWrite(MOTOR_2_A, HIGH);  // Right motor forward (inverted)
+  digitalWrite(MOTOR_2_B, LOW);
+
+  digitalWrite(MOTOR_1_A, HIGH);  // Left motor forward
+  digitalWrite(MOTOR_1_B, LOW);
 }
 
-void right() {
-  // Left motor forward, right motor back
-  digitalWrite(MOTOR_L_DIR, HIGH);
-  digitalWrite(MOTOR_R_DIR, LOW);
-  analogWrite(MOTOR_L_PWM, SPEED);
-  analogWrite(MOTOR_R_PWM, SPEED);
+void back() {
+  digitalWrite(MOTOR_2_A, LOW);  // Left motor forward (inverted)
+  digitalWrite(MOTOR_2_B, HIGH);
+
+  digitalWrite(MOTOR_1_A, LOW);  // Right motor forward
+  digitalWrite(MOTOR_1_B, HIGH);
 }
 
 void left() {
-  // Left motor back, right motor forward
-  digitalWrite(MOTOR_L_DIR, LOW);
-  digitalWrite(MOTOR_R_DIR, HIGH);
-  analogWrite(MOTOR_L_PWM, SPEED);
-  analogWrite(MOTOR_R_PWM, SPEED);
+  digitalWrite(MOTOR_2_A, HIGH);  // Left motor forward (inverted)
+  digitalWrite(MOTOR_2_B, LOW);
+
+  digitalWrite(MOTOR_1_A, LOW);  // Right motor stop
+  digitalWrite(MOTOR_1_B, LOW);
 }
 
-// === Main Loop ===
-int i;
+void right() {
+  digitalWrite(MOTOR_2_A, LOW);  // Left motor stop
+  digitalWrite(MOTOR_2_B, LOW);
+
+  digitalWrite(MOTOR_1_A, HIGH);  // Right motor forward
+  digitalWrite(MOTOR_1_B, LOW);
+}
+
+
+
 void loop() {
-  if (start == true) {
-    i++;
+  //Serial.println(analogRead(LINE_LEFT));
+
+  float dleft = readSensor(DIST_LEFT_T, DIST_LEFT_E);
+  delay(10);
+  float dmid = readSensor(DIST_MID_T, DIST_MID_E);
+  delay(10);
+  float dright = readSensor(DIST_RIGHT_T, DIST_RIGHT_E);
+  delay(10);
+
+  int lineLeft = analogRead(LINE_LEFT);
+  int lineRight = analogRead(LINE_RIGHT);
+  Serial.print(lineLeft);
+  Serial.print(" | ");
+  Serial.print(lineRight);
+  Serial.print(" | ");
+  Serial.print(dleft);
+  Serial.print(" | ");
+  Serial.print(dmid);
+  Serial.print(" | ");
+  Serial.println(dright);
+  Serial.println(digitalRead(START));
+  if (digitalRead(START) == HIGH) {
     
-    // Debug line sensors
-    /*Serial.print("LINE_LEFT: ");
-    Serial.print(analogRead(LINE_LEFT));
-    Serial.print(" | LINE_RIGHT: ");
-    Serial.println(analogRead(LINE_RIGHT));*/
-   // forward();
-    /*
-    // Line detected (danger zone)
-    if (analogRead(LINE_LEFT) < 100 || analogRead(LINE_RIGHT) < 100) {
-      Serial.println("Edge detected -> backing up");
-      back();
-      delay(500);
-      right();
-      delay(200);
-    }
-    // If something is directly ahead
-    else if (digitalRead(DIST_MID)) {
-      forward();
-    }
-    // If something is on the left
-    else if (digitalRead(DIST_LEFT)) {
+   
+    // 1. Edge detection override
+    // if (lineLeft < 550 || lineRight < 550) {
+    //   stop();
+    //   delay(5000);
+    //   back();
+    //   delay(500);
+    //   return;
+    // }
+
+    // float dleft  = readSensor(DIST_LEFT_T, DIST_LEFT_E);
+    // delay(50);
+    // float dmid   = readSensor(DIST_MID_T, DIST_MID_E);
+    // delay(50);
+    // float dright = readSensor(DIST_RIGHT_T, DIST_RIGHT_E);
+
+    // 2. RAM when very close
+    // if (dmid > 0 && dmid < 10) {
+    //   forward();
+    //   delay(500);
+    // }
+    if(dleft <= uthresh){
       left();
     }
-    // If something is on the right
-    else if (digitalRead(DIST_RIGHT)) {
+    else if(dright <= uthresh){
       right();
     }
-    // Default: keep moving forward
-    else {
+    else{
       forward();
     }
-    */
-
-    if(digitalRead(START) == false) {
+    if (dmid > uthresh && (lineLeft < 550 || lineRight < 550))
+    {
+      back();
+      delay(500);
+      left();
+      delay(1000);
       forward();
-    } else {
-      stop();
     }
   }
-}
 
-// === Placeholder function ===
-int myFunction(int x, int y) {
-  return x + y;
+  else {
+    stop();
+  }
 }
